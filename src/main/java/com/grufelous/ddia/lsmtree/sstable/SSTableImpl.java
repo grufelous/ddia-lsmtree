@@ -1,5 +1,7 @@
 package com.grufelous.ddia.lsmtree.sstable;
 
+import com.grufelous.ddia.lsmtree.constants.Thresholds;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -11,10 +13,15 @@ public class SSTableImpl implements SSTable {
     private Index index;
     private String fileName;
 
-    public void create(String fileName, NavigableMap<String, String> data) {
+    public SSTableImpl(String fileName) {
+        this.fileName = fileName;
+        index = new IndexImpl();
+    }
+
+    public void create(NavigableMap<String, String> data) {
         try {
             RandomAccessFile file = new RandomAccessFile(fileName, "rw");
-
+            int writtenIndex = 0;
             for(Map.Entry<String, String> entry : data.entrySet()) {
                 String key = entry.getKey();
                 String value = entry.getValue();
@@ -25,7 +32,10 @@ public class SSTableImpl implements SSTable {
                 file.writeBytes(key);
                 file.writeInt(valueSize);
                 file.writeBytes(value);
-                index.addPointer(key, currentPointer);
+                writtenIndex++;
+                if(writtenIndex % Thresholds.INDEX_OFFSET == 0) {
+                    index.addPointer(key, currentPointer);
+                }
             }
 
             file.close();
@@ -38,7 +48,7 @@ public class SSTableImpl implements SSTable {
         }
     }
 
-    public void initializeTableFromFile(String fileName) {
+    public void initializeTableFromFile() {
         try {
             RandomAccessFile file = new RandomAccessFile(fileName, "rw");
         } catch (FileNotFoundException ex) {
