@@ -2,11 +2,17 @@ package com.grufelous.ddia.lsmtree.services;
 
 import com.grufelous.ddia.lsmtree.constants.Thresholds;
 import com.grufelous.ddia.lsmtree.memtable.MemTable;
+import com.grufelous.ddia.lsmtree.memtable.MemTableImpl;
 import com.grufelous.ddia.lsmtree.sstable.SSTableRepository;
 
 public class LSMService {
     private MemTable memtable;
     private SSTableRepository ssTableRepository;
+
+    public LSMService() {
+        this.memtable = new MemTableImpl();
+        this.ssTableRepository = new SSTableRepository();
+    }
 
     public void put(String key, String entry) {
         memtable.put(key, entry);
